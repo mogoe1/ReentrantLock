@@ -2707,7 +2707,7 @@ img {
 		<li class="current tsd-kind-class">
 			<a href="ReentrantLock.html" class="tsd-kind-icon">Reentrant<wbr>Lock</a>
 			<ul>
-				<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-private">
+				<li class=" tsd-kind-constructor tsd-parent-kind-class">
 					<a href="ReentrantLock.html#constructor" class="tsd-kind-icon">constructor</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
@@ -2746,15 +2746,12 @@ img {
 		<section class="tsd-panel tsd-comment">
 			<div class="tsd-comment tsd-typography">
 				<div class="lead">
-					<p>A ReentrantLock can be used to gain exclusive access to a shared ressource among multiple threads.
-					Multiple ReentrantLock instances can be based on the same SharedArray and are called a lock-group.</p>
+					<p>A ReentrantLock can be used to synchronize async code and/or threads (WebWorkers). Multiple ReentrantLock instances can be grouped, and only one instance at a time can be locked.</p>
 				</div>
-				<p>Once <a href="ReentrantLock.html#lock">lock()</a> on an instance inside a lock-group has been called,
-					that instance owns the lock untill <a href="ReentrantLock.html#unlock">unlock()</a> gets called on the same instance.
-				Calls to <a href="ReentrantLock.html#lock">lock()</a> block untill the lock is no longer owned by any other instance inside the lock-group.</p>
-				<p>Calls to <a href="ReentrantLock.html#lock">lock()</a> do not block if the instance already owns the lock. Instead they increase the <a href="ReentrantLock.html#holdCount">holdCount</a> by one.
-					Each call to <a href="ReentrantLock.html#unlock">unlock()</a> on an instance decrements the <a href="ReentrantLock.html#holdCount">holdCount</a> of that instance by one.
-				If the <a href="ReentrantLock.html#holdCount">holdCount</a> reaches zero, the lock gets releasead and is no longer owned by the instance.</p>
+				<p>An instance can be locked by calling <a href="ReentrantLock.html#lock">lock()</a> on the instance. The call blocks until no other instance inside the group is locked and increments <a href="ReentrantLock.html#holdCount">holdCount</a> by one. After the call returns, the instance is guaranteed to be the only one inside the group that is locked. Since <a href="ReentrantLock.html#lock">lock()</a> is a blocking operation, it is not available on the main thread. See <a href="ReentrantLock.html#lockAsync">lockAsync()</a> for an alternative.</p>
+				<p>To unlock an instance, <a href="ReentrantLock.html#unlock">unlock()</a> can be called on the instance. The invocation decrements <a href="ReentrantLock.html#holdCount">holdCount</a> of the instance by one if <a href="ReentrantLock.html#holdCount">holdCount</a> is greater than 0. The instance is unlocked if <a href="ReentrantLock.html#holdCount">holdCount</a> reaches zero during the invocation.</p>
+				<p>Multiple ReentrantLock instances can be grouped by providing TypedArray instances based on the same SharedArrayBuffer instance to the ReentrantLock constructor on creation.</p>
+				<p>This implementation is based on <a href="https://github.com/mogoe1/semaphore">@mogoe1/semaphore</a> and uses SharedArrayBuffers and Atomics for synchronization.</p>
 			</div>
 		</section>
 		<section class="tsd-panel tsd-hierarchy">
@@ -2769,10 +2766,10 @@ img {
 			<h2>Index</h2>
 			<section class="tsd-panel tsd-index-panel">
 				<div class="tsd-index-content">
-					<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
+					<section class="tsd-index-section ">
 						<h3>Constructors</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-private"><a href="ReentrantLock.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="ReentrantLock.html#constructor" class="tsd-kind-icon">constructor</a></li>
 						</ul>
 					</section>
 					<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
@@ -2802,24 +2799,24 @@ img {
 				</div>
 			</section>
 		</section>
-		<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
+		<section class="tsd-panel-group tsd-member-group ">
 			<h2>Constructors</h2>
-			<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-private">
+			<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
 				<a name="constructor" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> constructor</h3>
-				<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-private">
+				<h3>constructor</h3>
+				<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
 					<li class="tsd-signature tsd-kind-icon">new <wbr>Reentrant<wbr>Lock<span class="tsd-signature-symbol">(</span>i32Array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Int32Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ReentrantLock.html" class="tsd-signature-type" data-tsd-kind="Class">ReentrantLock</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L51">ReentrantLock.ts:51</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L50">ReentrantLock.ts:50</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are inside the same lock-group.</p>
+								<p>Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are grouped.</p>
 							</div>
 						</div>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -2828,7 +2825,7 @@ img {
 								<h5>i32Array: <span class="tsd-signature-type">Int32Array</span></h5>
 								<div class="tsd-comment tsd-typography">
 									<div class="lead">
-										<p>A typed array used to store whether or not the lock is currently owned by an instance inside the lock-group. It has to have length of one and it has to be based on a SharedArrayBuffer.</p>
+										<p>A TypedArray used to store whether or not any instance inside a group of ReentrantLock instances is locked. It has to have a length of one, and it has to be based on a SharedArrayBuffer.</p>
 									</div>
 								</div>
 							</li>
@@ -2846,7 +2843,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_hold<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L24">ReentrantLock.ts:24</a></li>
+						<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L23">ReentrantLock.ts:23</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
@@ -2861,12 +2858,12 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_semaphore<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Semaphore</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L19">ReentrantLock.ts:19</a></li>
+						<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L18">ReentrantLock.ts:18</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>The underlying semaphore used by this lock.</p>
+						<p>The underlying <a href="https://github.com/mogoe1/semaphore">@mogoe1/semaphore</a> used by this lock.</p>
 					</div>
 				</div>
 			</section>
@@ -2883,12 +2880,12 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L36">ReentrantLock.ts:36</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L35">ReentrantLock.ts:35</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>SharedArrayBuffer used by this lock.</p>
+								<p>SharedArrayBuffer used by this ReentrantLocks group.</p>
 							</div>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SharedArrayBuffer</span></h4>
@@ -2905,7 +2902,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L29">ReentrantLock.ts:29</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L28">ReentrantLock.ts:28</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2927,12 +2924,12 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L43">ReentrantLock.ts:43</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L42">ReentrantLock.ts:42</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Whether or not the instance owns the lock.</p>
+								<p>Whether or not the instance is locked.</p>
 							</div>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -2952,17 +2949,17 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L62">ReentrantLock.ts:62</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L61">ReentrantLock.ts:61</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Take ownership of the lock and increments <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Blocks untill the lock is no longer owned by another instance and then takes ownership.</p>
+								<p>Locks this ReentrantLock instance and increments <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Blocks until this instance is locked and no other instance inside the group is locked.</p>
 							</div>
 							<p>If Atomics.wait is not availabe (eg. on the main thread) use <a href="ReentrantLock.html#lockAsync">lockAsync()</a> instead.</p>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-						<p>False if the lock was already owned by this instance prior to the function call. True otherwise.</p>
+						<p>False if this instance was already locked prior to the function call. True otherwise.</p>
 					</li>
 				</ul>
 			</section>
@@ -2976,16 +2973,16 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L76">ReentrantLock.ts:76</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L75">ReentrantLock.ts:75</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Take ownership of the lock and increments <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Immediately returns a promise that resolves once the lock is no longer owned by another and ownership was successfully claimed by this instance.</p>
+								<p>Locks this ReentrantLock instance and increments <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Immediately returns a promise that resolves once this instance is locked and no other instance inside the group is locked.</p>
 							</div>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						<p>A promise that resolves to false if the lock was already owned by this instance prior to the function call. Otherwise it resolves to true.</p>
+						<p>A promise that resolves to false if the instance was already locked prior to the function call. Otherwise it resolves to true.</p>
 					</li>
 				</ul>
 			</section>
@@ -2999,16 +2996,16 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L90">ReentrantLock.ts:90</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L89">ReentrantLock.ts:89</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Dncrements <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Once <a href="ReentrantLock.html#holdCount">holdCount</a> reaches zero the lock is no longer owned by this instance.</p>
+								<p>Decrements <a href="ReentrantLock.html#holdCount">holdCount</a> by one. Once <a href="ReentrantLock.html#holdCount">holdCount</a> reaches zero it unlocks this instance.</p>
 							</div>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-						<p>True if the lock is still owned by this instance (<a href="ReentrantLock.html#holdCount">holdCount</a> &gt; 0). False otherwise.</p>
+						<p>True if tis instances is still locked (<a href="ReentrantLock.html#holdCount">holdCount</a> &gt; 0). False otherwise.</p>
 					</li>
 				</ul>
 			</section>
@@ -3022,7 +3019,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/11058e3/src/ReentrantLock.ts#L108">ReentrantLock.ts:108</a></li>
+								<li>Defined in <a href="https://github.com/mogoe1/ReentrantLock/blob/5f19ecb/src/ReentrantLock.ts#L107">ReentrantLock.ts:107</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3041,6 +3038,7 @@ img {
 				<h2>Legend</h2>
 				<div class="tsd-legend-group">
 					<ul class="tsd-legend">
+						<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
 						<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 					</ul>
 					<ul class="tsd-legend">
