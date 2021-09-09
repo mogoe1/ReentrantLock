@@ -18,14 +18,15 @@ The following example shows how a reentrant-lock can be used to make sure only o
 import { ReentrantLock } from "@mogoe1/reentrant-lock";
 
 const lock = ReentrantLock.create();
-const worker = new Worker("worker.js", {type: "module"});
+const worker = new Worker("worker.js", { type: "module" });
 
-worker.postMessage(lock.buffer);
+lock.lockAsync().then(_ => {
+    worker.postMessage(lock.buffer);
 
-lock.lockAsync().then(_=>{
     // exclusive access to resource
-
-	lock.unlock();
+    console.log("locked!");
+    lock.unlock();
+    console.log("unlocked");
 });
 ```
 
@@ -36,12 +37,14 @@ import { ReentrantLock } from "@mogoe1/reentrant-lock";
 self.addEventListener("message", message => {
     const buffer = message.data;
     const lock = new ReentrantLock(new Int32Array(buffer));
-    
-    lock.lock(); // this blocks the worker thread untill the lock is owned!
-    const newlyLocked = lock.lock(); // lock can be called multiple times without blocking on one instance if the lock is owned.
-    
-    // exclusive access to resource
-    
+
+    let newlyLocked = lock.lock(); // this blocks the worker thread untill the main thread unlocks it's ReentrantLock instance!
+    console.log(newlyLocked); // true
+    newlyLocked =  lock.lock(); // lock can be called multiple times without blocking more than once
+    console.log(newlyLocked); // false
+
+    // exclusive access to resource here
+
     let stillOwned = lock.unlock();
     console.log(stillOwned); // true, because lock was called twice without unlock
     stillOwned = lock.unlock();
@@ -49,5 +52,5 @@ self.addEventListener("message", message => {
 });
 ```
 
-## Docs
-Docs are availabe at https://mogoe1.github.io/reentrant-lock.
+## API
+The API is documented at https://mogoe1.github.io/reentrant-lock/classes/ReentrantLock.html.
