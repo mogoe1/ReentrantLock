@@ -37,7 +37,7 @@ export class ReentrantLock {
     }
 
     /**
-    * Whether or not the instance owns the lock.
+    * Whether or not the instance is locked.
     */
     public get isLocked(): boolean {
         return this._semaphore.acquiredPermits > 0;
@@ -45,7 +45,7 @@ export class ReentrantLock {
 
     /**
      * Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are grouped.
-     * @param i32Array A TypedArray used to store whether or not any instance inside a group of ReentrantLock instances owns the lock. It has to have a length of one, and it has to be based on a SharedArrayBuffer.
+     * @param i32Array A TypedArray used to store whether or not any instance inside a group of ReentrantLock instances is locked. It has to have a length of one, and it has to be based on a SharedArrayBuffer.
      */
     public constructor(i32Array: Int32Array) {
         this._semaphore = new Semaphore(i32Array);
