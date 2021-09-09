@@ -48,7 +48,7 @@ export class ReentrantLock {
      * Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are inside the same lock-group.
      * @param i32Array A typed array used to store whether or not the lock is currently owned by an instance inside the lock-group. It has to have length of one and it has to be based on a SharedArrayBuffer.
      */
-    private constructor(i32Array: Int32Array) {
+    public constructor(i32Array: Int32Array) {
         this._semaphore = new Semaphore(i32Array);
         this._holdCount = 0;
     }
