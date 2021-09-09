@@ -5,8 +5,9 @@ self.addEventListener("message", message => {
     const buffer = message.data;
     const lock = new ReentrantLock(new Int32Array(buffer));
 
-    lock.lock(); // this blocks the worker thread untill the lock is owned!
-    const newlyLocked = lock.lock(); // lock can be called multiple times without blocking on one instance if the lock is owned.
+    lock.lock(); // this blocks the worker thread untill the main thread unlocks it's ReentrantLock instance!
+    const newlyLocked = lock.lock(); // lock can be called multiple times without blocking more than once
+    console.log(newlyLocked); // false, because this instance was locked prior to the previous line
 
     // exclusive access to resource
 

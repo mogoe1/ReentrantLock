@@ -1,20 +1,19 @@
 import { Semaphore } from "@mogoe1/semaphore";
 
 /**
- * A ReentrantLock can be used to gain exclusive access to a shared ressource among multiple threads.
- * Multiple ReentrantLock instances can be based on the same SharedArray and are called a lock-group.
+ * A ReentrantLock can be used to synchronize async code and/or threads (WebWorkers). Multiple ReentrantLock instances can be grouped, and only one instance at a time can be locked.
  * 
- * Once {@link ReentrantLock.lock lock()} on an instance inside a lock-group has been called,
- * that instance owns the lock untill {@link ReentrantLock.unlock unlock()} gets called on the same instance.
- * Calls to {@link ReentrantLock.lock lock()} block untill the lock is no longer owned by any other instance inside the lock-group.
+ * An instance can be locked by calling {@link ReentrantLock.lock lock()} on the instance. The call blocks until no other instance inside the group is locked and increments {@link ReentrantLock.holdCount holdCount} by one. After the call returns, the instance is guaranteed to be the only one inside the group that is locked. Since {@link ReentrantLock.lock lock()} is a blocking operation, it is not available on the main thread. See {@link ReentrantLock.lockAsync lockAsync()} for an alternative.
  * 
- * Calls to {@link ReentrantLock.lock lock()} do not block if the instance already owns the lock. Instead they increase the {@link ReentrantLock.holdCount holdCount} by one.
- * Each call to {@link ReentrantLock.unlock unlock()} on an instance decrements the {@link ReentrantLock.holdCount holdCount} of that instance by one.
- * If the {@link ReentrantLock.holdCount holdCount} reaches zero, the lock gets releasead and is no longer owned by the instance.
+ * To unlock an instance, {@link ReentrantLock.unlock unlock()} can be called on the instance. The invocation decrements {@link ReentrantLock.holdCount holdCount} of the instance by one if {@link ReentrantLock.holdCount holdCount} is greater than 0. The instance is unlocked if {@link ReentrantLock.holdCount holdCount} reaches zero during the invocation.
+ * 
+ * Multiple ReentrantLock instances can be grouped by providing TypedArray instances based on the same SharedArrayBuffer instance to the ReentrantLock constructor on creation.
+ * 
+ * This implementation is based on [@mogoe1/semaphore](https://github.com/mogoe1/semaphore) and uses SharedArrayBuffers and Atomics for synchronization.
  */
 export class ReentrantLock {
     /**
-     * The underlying semaphore used by this lock.
+     * The underlying [@mogoe1/semaphore](https://github.com/mogoe1/semaphore) used by this lock.
      */
     private _semaphore: Semaphore;
 
@@ -31,7 +30,7 @@ export class ReentrantLock {
     }
 
     /**
-     * SharedArrayBuffer used by this lock.
+     * SharedArrayBuffer used by this ReentrantLocks group.
      */
     public get buffer(): SharedArrayBuffer {
         return this._semaphore.buffer;
@@ -45,8 +44,8 @@ export class ReentrantLock {
     }
 
     /**
-     * Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are inside the same lock-group.
-     * @param i32Array A typed array used to store whether or not the lock is currently owned by an instance inside the lock-group. It has to have length of one and it has to be based on a SharedArrayBuffer.
+     * Create a new ReentrantLock instance. The given Int32Array should be based on a SharedArrayBuffer. Multiple ReentrantLock instances initialized with the same SharedArrayBuffer are grouped.
+     * @param i32Array A TypedArray used to store whether or not any instance inside a group of ReentrantLock instances owns the lock. It has to have a length of one, and it has to be based on a SharedArrayBuffer.
      */
     public constructor(i32Array: Int32Array) {
         this._semaphore = new Semaphore(i32Array);
@@ -54,10 +53,10 @@ export class ReentrantLock {
     }
 
     /**
-     * Take ownership of the lock and increments {@link ReentrantLock.holdCount holdCount} by one. Blocks untill the lock is no longer owned by another instance and then takes ownership.
+     * Locks this ReentrantLock instance and increments {@link ReentrantLock.holdCount holdCount} by one. Blocks until this instance is locked and no other instance inside the group is locked.
      * 
      * If Atomics.wait is not availabe (eg. on the main thread) use {@link ReentrantLock.lockAsync lockAsync()} instead.
-     * @returns False if the lock was already owned by this instance prior to the function call. True otherwise.
+     * @returns False if this instance was already locked prior to the function call. True otherwise.
      */
     public lock(): boolean {
         if (this.isLocked) {
@@ -70,8 +69,8 @@ export class ReentrantLock {
     }
 
     /**
-     * Take ownership of the lock and increments {@link ReentrantLock.holdCount holdCount} by one. Immediately returns a promise that resolves once the lock is no longer owned by another and ownership was successfully claimed by this instance.
-     * @returns A promise that resolves to false if the lock was already owned by this instance prior to the function call. Otherwise it resolves to true.
+     * Locks this ReentrantLock instance and increments {@link ReentrantLock.holdCount holdCount} by one. Immediately returns a promise that resolves once this instance is locked and no other instance inside the group is locked.
+     * @returns A promise that resolves to false if the instance was already locked prior to the function call. Otherwise it resolves to true.
      */
     public async lockAsync(): Promise<boolean> {
         if (this.isLocked) {
@@ -84,8 +83,8 @@ export class ReentrantLock {
     }
 
     /**
-     * Dncrements {@link ReentrantLock.holdCount holdCount} by one. Once {@link ReentrantLock.holdCount holdCount} reaches zero the lock is no longer owned by this instance.
-     * @returns True if the lock is still owned by this instance ({@link ReentrantLock.holdCount holdCount} > 0). False otherwise. 
+     * Decrements {@link ReentrantLock.holdCount holdCount} by one. Once {@link ReentrantLock.holdCount holdCount} reaches zero it unlocks this instance.
+     * @returns True if tis instances is still locked ({@link ReentrantLock.holdCount holdCount} > 0). False otherwise. 
      */
     public unlock(): boolean {
         if (!this.isLocked) {
