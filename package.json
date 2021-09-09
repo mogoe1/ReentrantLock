@@ -11,7 +11,7 @@
         "lint": "eslint ./src/**",
         "lint:fix": "eslint ./src/** --fix",
         "prepare": "npm run build",
-        "serve": "web-dev-server --watch --node-resolve"
+        "serve": "web-dev-server"
     },
     "repository": {
         "type": "git",
